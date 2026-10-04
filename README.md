@@ -1,55 +1,18 @@
-# Jacob — Một góc nhỏ trên Internet
+# Jacob Mini Site
 
-Website tĩnh bằng HTML/CSS/JavaScript, không framework, không database.
+Website cá nhân tối giản, chạy bằng HTML/CSS/JavaScript thuần và Cloudflare Workers Static Assets.
 
-## Tính năng
+## Có gì mới
 
-- Lời chào ngẫu nhiên mỗi lần mở trang
-- Đồng hồ realtime
-- Ngày hiện tại
-- Thời tiết qua Open-Meteo, không cần API key
-- Dark mode
-- Animation nhẹ
-- Mini game đoán số
-- Random page
-- About page
-- Custom 404
-- Responsive mobile
-- Không quảng cáo
-- Không analytics/tracking
+- Đổi toàn bộ nhận diện hiển thị từ Jacob → Jacob.
+- Trang `/holidays.html`: đếm ngược đến các ngày lễ chính thức của Việt Nam.
+- Trang chủ có thời tiết hiện tại + dự báo 3 ngày sắp tới.
+- Không quảng cáo, không analytics, không tracking.
+- Responsive cho điện thoại.
+- Đồng hồ realtime, lời chào ngẫu nhiên, dark mode và mini game.
 
-## Chạy thử trên máy
+## Deploy
 
-Có thể mở `index.html` trực tiếp, nhưng để tính năng thời tiết hoạt động ổn định nên chạy qua một local server.
+Push toàn bộ các file lên GitHub. Cloudflare sẽ tự deploy theo `wrangler.jsonc`.
 
-Ví dụ nếu đã có Python:
-
-```bash
-python -m http.server 8000
-```
-
-Sau đó mở:
-
-http://localhost:8000
-
-## Đưa lên Cloudflare Pages
-
-1. Tạo repository GitHub và upload toàn bộ các file.
-2. Vào Cloudflare Dashboard → Workers & Pages → Create → Pages.
-3. Kết nối repository.
-4. Framework preset: None.
-5. Build command: để trống.
-6. Build output directory: `/`
-7. Deploy.
-
-Website không cần build.
-
-## Tên miền
-
-Sau khi deploy, vào project Cloudflare Pages → Custom domains → Add custom domain và nhập tên miền của bạn.
-
-## Ghi chú về thời tiết
-
-Website dùng Open-Meteo. Nếu người dùng cho phép vị trí, trang sẽ dùng vị trí gần đúng của trình duyệt. Nếu không, mặc định hiển thị Bắc Ninh.
-
-Không có API key.
+Không cần `_headers`.

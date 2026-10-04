@@ -2,43 +2,91 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Một góc nhỏ trên Internet.">
-  <meta name="theme-color" content="#f7f7f5">
-  <title>Jacob — Một góc nhỏ trên Internet</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f7f7f4">
+  <meta name="description" content="Jacob — một góc nhỏ trên Internet.">
+  <meta property="og:title" content="Jacob.">
+  <meta property="og:description" content="Một góc nhỏ trên Internet.">
+  <title>Jacob.</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-  <div class="page-shell">
-    <header class="topbar">
-      <a class="logo" href="index.html">JACOB<span>.</span></a>
-      <nav>
-        <a href="about.html">About</a>
-        <a href="random.html">Random</a>
-        <a href="game.html">Game</a>
-        <button id="themeToggle" class="icon-btn" aria-label="Đổi giao diện">◐</button>
-      </nav>
-    </header>
+<body data-page="home">
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Trang chủ">JACOB.</a>
+    <nav class="nav" aria-label="Điều hướng">
+      <a href="about.html">About</a>
+      <a href="random.html">Random</a>
+      <a href="holidays.html">Ngày lễ</a>
+      <a href="game.html">Game</a>
+      <button id="themeToggle" class="icon-btn" type="button" aria-label="Đổi giao diện">◐</button>
+    </nav>
+  </header>
 
-    <main class="hero">
-      <div class="weather" id="weather">Đang xem thời tiết…</div>
-      <div class="date" id="date"></div>
+  <main class="home">
+    <section class="hero reveal">
+      <p class="eyebrow" id="greeting">Xin chào.</p>
+      <h1>Jacob.</h1>
+      <p class="lead" id="dailyLine">Một góc nhỏ trên Internet.</p>
       <div class="clock" id="clock">00:00:00</div>
-      <p class="greeting" id="greeting"></p>
-      <button class="primary-btn" id="randomGreeting">✦ Random</button>
-    </main>
-
-    <section class="quiet-note">
-      <span>Không quảng cáo.</span>
-      <span>Không tracking.</span>
-      <span>Chỉ là một website nhỏ.</span>
+      <div class="meta-row">
+        <span id="dateText">—</span>
+        <span class="dot">•</span>
+        <span id="locationText">Đang tìm vị trí…</span>
+      </div>
     </section>
 
-    <footer class="footer">
-      <span>© <span id="year"></span> Jacob</span>
-      <span>Made for fun.</span>
-    </footer>
-  </div>
+    <section class="weather-section reveal delay-1">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Thời tiết</p>
+          <h2 id="weatherTitle">Hôm nay</h2>
+        </div>
+        <button id="refreshWeather" class="text-btn" type="button">Làm mới ↻</button>
+      </div>
+
+      <div class="weather-current card">
+        <div>
+          <div class="weather-icon" id="weatherIcon">☼</div>
+          <div class="current-temp" id="currentTemp">—°</div>
+          <div class="muted" id="currentSummary">Đang tải thời tiết…</div>
+        </div>
+        <div class="current-details">
+          <span><b id="currentHigh">—°</b> cao</span>
+          <span><b id="currentLow">—°</b> thấp</span>
+          <span><b id="rainChance">—%</b> mưa</span>
+        </div>
+      </div>
+
+      <div class="forecast-grid" id="forecastGrid" aria-live="polite">
+        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+      </div>
+      <p class="tiny-note">Thời tiết lấy từ Open-Meteo. Vị trí được dùng chỉ để tìm thời tiết và không được lưu/tracking.</p>
+    </section>
+
+    <section class="quick-links reveal delay-2">
+      <a class="link-card" href="holidays.html">
+        <span class="link-mark">↓</span>
+        <span><strong>Ngày lễ Việt Nam</strong><small>Đếm ngược đến kỳ nghỉ tiếp theo</small></span>
+        <span>→</span>
+      </a>
+      <a class="link-card" href="random.html">
+        <span class="link-mark">✦</span>
+        <span><strong>Random</strong><small>Một thứ bất ngờ nho nhỏ</small></span>
+        <span>→</span>
+      </a>
+      <a class="link-card" href="game.html">
+        <span class="link-mark">○</span>
+        <span><strong>Mini game</strong><small>Đoán một con số</small></span>
+        <span>→</span>
+      </a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> Jacob.</span>
+    <span>No ads · No tracking</span>
+  </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
