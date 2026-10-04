@@ -1,0 +1,4 @@
+/*
+  Cache static assets aggressively.
+  Cloudflare Pages supports this file automatically.
+*/
