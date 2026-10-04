@@ -1,4 +1,4 @@
-# Thắng — Một góc nhỏ trên Internet
+# Jacob — Một góc nhỏ trên Internet
 
 Website tĩnh bằng HTML/CSS/JavaScript, không framework, không database.
 
