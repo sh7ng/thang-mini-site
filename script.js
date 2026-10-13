@@ -72,7 +72,7 @@ function formatDay(dateString, index){
 }
 
 async function loadWeather(lat, lon){
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=4`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&hourly=temperature_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=4`;
   const res = await fetch(url);
   if(!res.ok) throw new Error("Weather request failed");
   return res.json();
@@ -88,6 +88,9 @@ function renderWeather(data){
   if($("#currentHigh")) $("#currentHigh").textContent = `${Math.round(data.daily.temperature_2m_max[0])}°`;
   if($("#currentLow")) $("#currentLow").textContent = `${Math.round(data.daily.temperature_2m_min[0])}°`;
   if($("#rainChance")) $("#rainChance").textContent = `${data.daily.precipitation_probability_max[0] ?? 0}%`;
+
+  renderHourlyChart(data);
+  renderElevation(data);
 
   const grid = $("#forecastGrid");
   if(!grid) return;
@@ -108,6 +111,48 @@ function renderWeather(data){
   }
 }
 
+
+function renderHourlyChart(data){
+  const container = $("#hourlyChart");
+  const rangeLabel = $("#chartRange");
+  if(!container || !data.hourly || !data.hourly.time || !data.hourly.temperature_2m){
+    if(container) container.innerHTML = '<p class="muted">Chưa có dữ liệu nhiệt độ theo giờ.</p>';
+    return;
+  }
+  const today = data.daily.time[0];
+  const points = data.hourly.time.map((time,i)=>({time,temp:data.hourly.temperature_2m[i]}))
+    .filter(p=>p.time.startsWith(today) && Number.isFinite(p.temp));
+  if(points.length < 2){ container.innerHTML = '<p class="muted">Chưa có đủ dữ liệu để vẽ biểu đồ.</p>'; return; }
+
+  const width=720, height=220, left=42, right=16, top=18, bottom=34;
+  const values=points.map(p=>p.temp);
+  const min=Math.floor(Math.min(...values)-1), max=Math.ceil(Math.max(...values)+1);
+  const plotW=width-left-right, plotH=height-top-bottom;
+  const x=i=>left+(i/(points.length-1))*plotW;
+  const y=v=>top+((max-v)/(max-min||1))*plotH;
+  const line=points.map((p,i)=>`${i===0?'M':'L'} ${x(i).toFixed(1)} ${y(p.temp).toFixed(1)}`).join(' ');
+  const area=`${line} L ${x(points.length-1).toFixed(1)} ${height-bottom} L ${left} ${height-bottom} Z`;
+  const gridVals=[min,Math.round((min+max)/2),max];
+  const grid=gridVals.map(v=>`<line x1="${left}" y1="${y(v)}" x2="${width-right}" y2="${y(v)}" class="chart-gridline"/><text x="${left-9}" y="${y(v)+4}" text-anchor="end" class="chart-axis-label">${v}°</text>`).join('');
+  const labels=[0,Math.round((points.length-1)/4),Math.round((points.length-1)/2),Math.round((points.length-1)*3/4),points.length-1];
+  const xLabels=[...new Set(labels)].map(i=>`<text x="${x(i)}" y="${height-9}" text-anchor="middle" class="chart-axis-label">${points[i].time.slice(11,16)}</text>`).join('');
+  const dots=points.map((p,i)=>`<circle cx="${x(i)}" cy="${y(p.temp)}" r="${i%3===0?3:1.7}" class="chart-dot"><title>${p.time.slice(11,16)} · ${p.temp.toFixed(1)}°C</title></circle>`).join('');
+  container.innerHTML=`<svg viewBox="0 0 ${width} ${height}" class="temperature-svg" role="img" aria-label="Nhiệt độ hôm nay từ ${Math.min(...values).toFixed(1)} đến ${Math.max(...values).toFixed(1)} độ C"><defs><linearGradient id="tempFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" class="chart-fill-top"/><stop offset="100%" class="chart-fill-bottom"/></linearGradient></defs>${grid}<path d="${area}" fill="url(#tempFill)"/><path d="${line}" class="chart-line"/>${dots}${xLabels}</svg>`;
+  if(rangeLabel) rangeLabel.textContent=`${Math.min(...values).toFixed(1)}° – ${Math.max(...values).toFixed(1)}°C`;
+}
+
+function renderElevation(data){
+  const value=$("#elevationValue"), note=$("#elevationNote");
+  if(!value) return;
+  if(Number.isFinite(data.elevation)){
+    value.textContent=`${Math.round(data.elevation)} m so với mực nước biển`;
+    if(note) note.textContent="Độ cao ước tính theo mô hình địa hình tại tọa độ đang dùng.";
+  }else{
+    value.textContent="Chưa có dữ liệu";
+    if(note) note.textContent="Không lấy được độ cao cho vị trí này.";
+  }
+}
+
 async function initWeather(){
   const title = $("#weatherTitle");
   const location = $("#locationText");
@@ -117,6 +162,8 @@ async function initWeather(){
       const data = await loadWeather(lat,lon);
       renderWeather(data);
       if(location) location.textContent = name || "Vị trí hiện tại";
+      const elevationNote=$("#elevationNote");
+      if(elevationNote && name === "Hà Nội") elevationNote.textContent="Đang dùng vị trí mặc định Hà Nội vì chưa cấp quyền vị trí; hãy cho phép định vị để xem độ cao tại nơi bạn đang ở.";
     }catch{
       if($("#currentSummary")) $("#currentSummary").textContent = "Không lấy được dữ liệu thời tiết.";
     }

@@ -37,6 +37,26 @@ button{cursor:pointer}
 .forecast-icon{font-size:28px;margin-bottom:7px}
 .forecast-temp{font-size:18px;font-weight:700}
 .forecast-rain{font-size:12px;color:var(--muted);margin-top:6px}
+.hourly-card{padding:24px;margin-top:14px}
+.chart-heading{margin-bottom:10px}
+.chart-heading h3,.elevation-card h3{margin:0;font-size:19px;letter-spacing:-.025em}
+.chart-unit{font-size:13px;color:var(--muted)}
+.hourly-chart{width:100%;min-width:0;overflow:hidden}
+.temperature-svg{display:block;width:100%;height:auto;overflow:visible}
+.chart-gridline{stroke:var(--line);stroke-width:1;stroke-dasharray:3 5}
+.chart-axis-label{fill:var(--muted);font-size:12px}
+.chart-line{fill:none;stroke:var(--text);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.chart-dot{fill:var(--text);stroke:var(--surface);stroke-width:1.5}
+.chart-fill-top{stop-color:var(--text);stop-opacity:.15}
+.chart-fill-bottom{stop-color:var(--text);stop-opacity:0}
+.chart-legend{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:2px}
+.chart-legend span:first-child{display:flex;align-items:center;gap:7px}
+.chart-legend i{display:inline-block;width:16px;height:3px;border-radius:4px;background:var(--text)}
+.elevation-card{display:flex;align-items:center;gap:18px;padding:22px;margin-top:14px}
+.elevation-symbol{display:grid;place-items:center;flex:0 0 46px;height:46px;border:1px solid var(--line);border-radius:50%;font-size:25px;color:var(--muted)}
+.elevation-card .eyebrow{margin:0 0 5px}
+.elevation-value{font-size:20px;font-weight:700;margin:8px 0 0}
+.elevation-card .tiny-note{margin:4px 0 0}
 .skeleton{height:145px;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(90deg,var(--surface),#ededeb,var(--surface));background-size:200% 100%;animation:shimmer 1.5s infinite}
 .tiny-note{font-size:11px;color:var(--muted);margin-top:12px}
 .text-btn{border:0;background:none;color:var(--muted);padding:5px 0}
@@ -89,6 +109,7 @@ body.dark .lead,body.dark .large-copy{color:#c2c2bc}
   .home,.page{padding:35px 18px 75px}.hero{min-height:52vh;padding:35px 0}.hero h1{font-size:70px}
   .weather-current{align-items:flex-start;flex-direction:column}.current-details{gap:14px}
   .forecast-grid{grid-template-columns:1fr}
+  .hourly-card{padding:17px 12px}.chart-axis-label{font-size:11px}.elevation-card{align-items:flex-start;padding:18px}.elevation-value{font-size:18px}
   .forecast-card{min-height:auto;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px}.forecast-day{margin:0}.forecast-icon{margin:0}.forecast-rain{margin:0}
   .site-footer{padding-left:18px;padding-right:18px;gap:10px;flex-direction:column}
   .holiday-item{grid-template-columns:1fr}.holiday-days{text-align:left}

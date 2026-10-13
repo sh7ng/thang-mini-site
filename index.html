@@ -60,7 +60,26 @@
       <div class="forecast-grid" id="forecastGrid" aria-live="polite">
         <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
       </div>
-      <p class="tiny-note">Thời tiết lấy từ Open-Meteo. Vị trí được dùng chỉ để tìm thời tiết và không được lưu/tracking.</p>
+
+      <section class="hourly-card card" aria-labelledby="hourlyTitle">
+        <div class="section-heading chart-heading">
+          <div>
+            <p class="eyebrow">Diễn biến trong ngày</p>
+            <h3 id="hourlyTitle">Nhiệt độ theo giờ</h3>
+          </div>
+          <span class="chart-unit">°C</span>
+        </div>
+        <div id="hourlyChart" class="hourly-chart" role="img" aria-label="Biểu đồ nhiệt độ theo giờ hôm nay">
+          <p class="muted">Đang tải biểu đồ…</p>
+        </div>
+        <div class="chart-legend"><span><i></i> Nhiệt độ dự báo</span><span id="chartRange">—</span></div>
+      </section>
+
+      <div class="elevation-card card">
+        <div class="elevation-symbol" aria-hidden="true">⌁</div>
+        <div><p class="eyebrow">Địa hình</p><h3>Độ cao tại vị trí của bạn</h3><p id="elevationValue" class="elevation-value">Đang xác định…</p><p id="elevationNote" class="tiny-note">Cần cho phép truy cập vị trí để ước tính độ cao.</p></div>
+      </div>
+      <p class="tiny-note">Thời tiết và độ cao được lấy từ Open-Meteo. Tọa độ chỉ dùng để truy vấn dữ liệu, không được lưu hay tracking.</p>
     </section>
 
     <section class="quick-links reveal delay-2">
