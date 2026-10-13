@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goertek Material Label Generator</title>
+    <!-- Bootstrap CSS for Form Styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- JsBarcode and QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --dark-blue: #084a86;
+            --dark-orange: #d35400;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+        }
+        .container-fluid {
+            max-width: 1400px;
+        }
+
+        /* --- THEME STYLES --- */
+        .bg-theme-blue {
+            background-color: var(--dark-blue) !important;
+            color: white !important;
+        }
+        .text-theme-blue {
+            color: var(--dark-blue) !important;
+        }
+        .btn-theme-orange {
+            background-color: var(--dark-orange) !important;
+            border-color: var(--dark-orange) !important;
+            color: white !important;
+            font-weight: bold;
+        }
+        .btn-theme-orange:hover {
+            background-color: #e65c00 !important;
+            border-color: #e65c00 !important;
+            color: white !important;
+        }
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            @page {
+                size: 100mm 80mm; /* Khổ giấy ngang 100x80 */
+                margin: 0; 
+            }
+
+            html, body {
+                width: 100mm !important;
+                background-color: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Thủ thuật: Ẩn tất cả mọi thứ trên trang, chỉ hiển thị mỗi wrapper của tem */
+            body * {
+                visibility: hidden;
+            }
+
+            #labels-wrapper, #labels-wrapper * {
+                visibility: visible;
+            }
+
+            #labels-wrapper {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+            
+            /* Box chứa 1 tem vừa vặn 1 trang giấy in */
+            .print-container {
+                width: 100mm !important;
+                height: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                /* Căn giữa tem sau khi rotate */
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                
+                page-break-after: always !important;
+                page-break-inside: avoid !important;
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+            }
+
+            .print-container:last-child {
+                page-break-after: avoid !important;
+            }
+
+            /* Xoay ngang tem và thu nhỏ để nhét vừa khổ giấy 80x100 */
+            .label-page {
+                width: 100mm !important; 
+                height: 140mm !important; 
+                margin: 0 !important;
+                padding: 4mm !important; 
+                border: none !important;
+                box-shadow: none !important;
+                background-color: white !important;
+                box-sizing: border-box !important;
+                
+                /* Không dùng absolute nữa để tránh lỗi mất nội dung trang in */
+                position: relative !important;
+                transform: rotate(-90deg) scale(0.70) !important;
+            }
+        }
+        
+        /* --- SCREEN STYLES --- */
+        .print-container {
+            width: 100mm;
+            margin-bottom: 20px;
+        }
+
+        .label-page {
+            width: 100mm;
+            min-height: 140mm;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 4mm;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+            color: black;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        .label-type-title {
+            text-align: center;
+            font-size: 15.5px; 
+            font-weight: bold;
+            color: #d32f2f;
+            margin-bottom: 2px;
+        }
+        
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        
+        .label-col-left {
+            width: 65%;
+        }
+        
+        .label-col-right {
+            width: 35%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+        }
+        
+        .label-field {
+            margin-bottom: 1px; 
+        }
+        
+        .label-field-title {
+            font-size: 12.5px; 
+            font-weight: bold;
+            display: inline-block;
+            min-width: 72px; 
+        }
+        
+        .label-field-value {
+            font-size: 12.5px; 
+        }
+
+        /* Chỉnh phông QTY, VD P/N & GT P/N to thêm 20% */
+        .highlight-large-title {
+            font-size: 15px !important;
+        }
+        .highlight-large-value {
+            font-size: 15px !important;
+        }
+        
+        .barcode-svg {
+            display: block;
+            margin-top: 1px;
+            margin-left: -5px;
+        }
+
+        .flex-row-2 {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        
+        .flex-row-2 .label-field {
+            width: 48%;
+        }
+
+        .qrcode-container {
+            margin-top: 2px;
+            padding: 2px;
+            background: white;
+        }
+        
+        /* Chỉnh QR to thêm 20% (Lên 138px) */
+        .qrcode-container img {
+            width: 138px !important; 
+            height: 138px !important;
+        }
+
+        .remark-row {
+            margin-top: 4px;
+            font-size: 12.5px; 
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .hf-mark {
+            font-size: 13.5px; 
+            font-weight: bold;
+        }
+        
+        .app-footer {
+            margin-top: 30px;
+            padding: 15px 0;
+            border-top: 1px solid #ddd;
+            color: #6c757d;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        /* Tracker Styles */
+        .tracker-box {
+            background: #eef2f5;
+            border: 1px dashed #adb5bd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Form Section -->
+        <div class="col-md-6 col-lg-5 no-print">
+            <div class="card shadow-sm border-0 sticky-top" style="top: 20px; max-height: 95vh; overflow-y: auto;">
+                <div class="card-header bg-theme-blue d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 text-white">Nhập Thông Tin Tem</h5>
+                    <button class="btn btn-sm btn-light" onclick="autoGenerateCodes()" title="Cập nhật SPN, L/N, D/C theo ngày hôm nay">
+                        <i class="bi bi-arrow-clockwise"></i> Auto Gen Mã
+                    </button>
+                </div>
+                <div class="card-body bg-white border">
+                    <form id="labelForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-theme-blue">Loại tem (Label Type)</label>
+                            <div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="labelType" id="typeOuter" value="outer" checked>
+                                    <label class="form-check-label fw-bold" for="typeOuter">Tem ngoài (Outer Label)</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="labelType" id="typeInner" value="inner">
+                                    <label class="form-check-label" for="typeInner">Tem trong (Inner Label)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <label class="form-label mb-1 fw-semibold text-theme-blue">Tổng SL Đơn hàng (Total)</label>
+                                <input type="number" class="form-control form-control-sm font-monospace" id="tqty" value="15000" oninput="generateLabels()">
+                                <small class="text-muted" style="font-size: 10px;">Hệ thống tự chia tem</small>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label mb-1 fw-semibold text-theme-blue">QTY (SL 1 hộp/thùng)</label>
+                                <input type="number" class="form-control form-control-sm font-monospace" id="qty" value="6000" oninput="generateLabels()">
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <label class="form-label mb-1 fw-semibold text-theme-blue">VD P/N (Mã NVL Vendor)</label>
+                                <input type="text" class="form-control form-control-sm" id="vd_pn" value="305000452701" oninput="generateLabels()">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label mb-1 fw-semibold text-theme-blue">GT P/N (Mã NVL Goertek)</label>
+                                <input type="text" class="form-control form-control-sm" id="gt_pn" value="305000452701" oninput="generateLabels()">
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <label class="form-label mb-1 fw-semibold text-theme-blue">VD CODE (Mã Vendor)</label>
+                                <input type="text" class="form-control form-control-sm" id="vd_code" value="29749" oninput="generateLabels()">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label mb-1 fw-semibold text-theme-blue">D/C (Date Code)</label>
+                                <input type="text" class="form-control form-control-sm" id="dc" value="" oninput="generateLabels()">
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label mb-1 fw-semibold text-theme-blue">L/N (Lot Number)</label>
+                            <input type="text" class="form-control form-control-sm" id="ln" value="" oninput="generateLabels()">
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label mb-1 fw-semibold text-theme-blue">SPN (Mã gói nhỏ nhất đầu tiên)</label>
+                            <input type="text" class="form-control form-control-sm font-monospace text-primary fw-bold" id="spn" value="" oninput="generateLabels()">
+                            <small class="text-muted" style="font-size: 10px;">SPN sẽ tự động tăng sau mỗi lần bấm In để tránh trùng lặp.</small>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label mb-1 fw-semibold text-theme-blue">WLN (WMS Lot No)</label>
+                            <input type="text" class="form-control form-control-sm" id="wln" value="" oninput="generateLabels()">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label mb-1 fw-semibold text-theme-blue">Ghi chú (Remark)</label>
+                            <input type="text" class="form-control form-control-sm" id="remark" value="CÔNG TY TNHH NANO TECH" oninput="generateLabels()">
+                        </div>
+
+                        <button type="button" class="btn btn-theme-orange w-100 py-2 fs-5" onclick="window.print()">
+                            <i class="bi bi-printer"></i> In Tem Hàng Loạt
+                        </button>
+
+                        <!-- Print Tracker Section -->
+                        <div class="tracker-box">
+                            <span class="text-secondary fw-semibold">Tổng số tem đã in:</span> 
+                            <span id="printCount" class="fs-4 fw-bold text-success">0</span>
+                            <br>
+                            <a href="#" onclick="resetPrintCount(event)" class="text-danger small text-decoration-none mt-1 d-inline-block">
+                                <i class="bi bi-arrow-counterclockwise"></i> Đặt lại bộ đếm về 0
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="col-md-6 col-lg-7 d-flex flex-column align-items-center align-items-lg-start">
+            <h5 class="text-center mb-3 text-theme-blue fw-bold no-print" style="width: 100mm;">Xem trước tem (Preview)</h5>
+            
+            <div id="labels-wrapper">
+                <!-- Labels will be generated here by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-footer no-print">
+        Copyright by Nano tech with the support of Gemini.
+    </div>
+</div>
+
+<script>
+    const chars34 = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+    let totalPrinted = 0;
+
+    function toBase34(num) {
+        if (num === 0) return "000";
+        let res = "";
+        while (num > 0) {
+            res = chars34[num % 34] + res;
+            num = Math.floor(num / 34);
+        }
+        return res.padStart(3, '0');
+    }
+
+    function base34ToDec(str) {
+        let val = 0;
+        for(let i=0; i<str.length; i++) {
+            val = val * 34 + chars34.indexOf(str[i]);
+        }
+        return val;
+    }
+
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        const weekNo = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+        return String(weekNo).padStart(2, '0');
+    }
+
+    function autoGenerateCodes() {
+        const now = new Date();
+        const yy = String(now.getFullYear()).slice(2);
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const yyyymmdd = now.getFullYear() + mm + dd;
+        const yymmdd = yy + mm + dd;
+        const ww = getWeekNumber(now);
+
+        const gtpn = document.getElementById("gt_pn").value || "305000452701";
+        const vdcode = document.getElementById("vd_code").value || "29749";
+
+        document.getElementById('dc').value = yymmdd;
+        document.getElementById('ln').value = yyyymmdd + '001A1';
+        document.getElementById('wln').value = yyyymmdd + '001' + vdcode;
+        
+        // Smart SPN generator (Resumes from last printed SPN if it matches today's rule)
+        const expectedPrefix = gtpn + '-' + yy + ww;
+        const savedSpn = localStorage.getItem('goertekLastSpn');
+        
+        if (savedSpn && savedSpn.startsWith(expectedPrefix)) {
+            document.getElementById('spn').value = savedSpn;
+        } else {
+            document.getElementById('spn').value = expectedPrefix + '-001';
+        }
+
+        generateLabels();
+    }
+
+    document.querySelectorAll('input[name="labelType"]').forEach((elem) => {
+        elem.addEventListener("change", generateLabels);
+    });
+
+    function drawBarcode(id, value) {
+        if(!value) return;
+        try {
+            JsBarcode("#" + id, value, {
+                format: "CODE128",
+                displayValue: false,
+                height: 24.2, 
+                width: 1.26,  
+                margin: 0,
+                background: "transparent"
+            });
+        } catch(e) {
+            console.error("Invalid barcode value: ", value);
+        }
+    }
+
+    function generateLabels() {
+        const wrapper = document.getElementById("labels-wrapper");
+        wrapper.innerHTML = "";
+
+        const vdpn = document.getElementById("vd_pn").value;
+        const gtpn = document.getElementById("gt_pn").value;
+        const vdcode = document.getElementById("vd_code").value;
+        const dc = document.getElementById("dc").value;
+        const ln = document.getElementById("ln").value;
+        const wln = document.getElementById("wln").value;
+        const remark = document.getElementById("remark").value;
+        const labelType = document.querySelector('input[name="labelType"]:checked').value;
+        
+        let qtyPerBox = parseInt(document.getElementById("qty").value, 10) || 6000;
+        let tqty = parseInt(document.getElementById("tqty").value, 10) || qtyPerBox;
+        
+        const lnvd = `${ln}-${vdcode}-${dc}`;
+
+        const baseSpn = document.getElementById("spn").value;
+        let spnPrefix = "";
+        let spnSerialDec = 0;
+        if (baseSpn.includes('-')) {
+            let parts = baseSpn.split('-');
+            let serialStr = parts.pop();
+            spnPrefix = parts.join('-');
+            spnSerialDec = base34ToDec(serialStr.toUpperCase());
+        } else {
+            spnPrefix = baseSpn;
+        }
+
+        let totalLabels = 1;
+        if (tqty > 0) {
+            totalLabels = Math.ceil(tqty / qtyPerBox);
+        }
+
+        for (let i = 0; i < totalLabels; i++) {
+            let currentQty = (i === totalLabels - 1 && tqty % qtyPerBox !== 0) ? tqty % qtyPerBox : qtyPerBox;
+            
+            let currentSpn = baseSpn;
+            if (spnPrefix !== "") {
+                currentSpn = spnPrefix + '-' + toBase34(spnSerialDec + i);
+            }
+
+            let titleStr = labelType === 'outer' ? '外标签 (Outer Label)' : '内标签 (Inner Label)';
+            
+            let labelHtml = `
+            <div class="print-container">
+                <div class="label-page" id="label-container-${i}">
+                    <div class="label-type-title">${titleStr}</div>
+                    
+                    <div class="label-row">
+                        <div class="label-col-left">
+                            <div class="label-field">
+                                <span class="label-field-title highlight-large-title">VD P/N:</span> <span class="label-field-value highlight-large-value">${vdpn}</span>
+                                <svg class="barcode-svg" id="bc_vd_pn_${i}"></svg>
+                            </div>
+                            <div class="label-field">
+                                <span class="label-field-title highlight-large-title">GT P/N:</span> <span class="label-field-value highlight-large-value">${gtpn}</span>
+                                <svg class="barcode-svg" id="bc_gt_pn_${i}"></svg>
+                            </div>
+                            <div class="label-field">
+                                <span class="label-field-title">VD CODE:</span> <span class="label-field-value">${vdcode}</span>
+                                <svg class="barcode-svg" id="bc_vd_code_${i}"></svg>
+                            </div>
+                        </div>
+                        <div class="label-col-right">
+                            <div class="qrcode-container" id="qrcode_${i}"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex-row-2">
+                        <div class="label-field">
+                            <span class="label-field-title" style="min-width: 30px;">D/C:</span> <span class="label-field-value">${dc}</span>
+                            <svg class="barcode-svg" id="bc_dc_${i}"></svg>
+                        </div>
+                        <div class="label-field">
+                            <span class="label-field-title highlight-large-title" style="min-width: 30px;">QTY:</span> <span class="label-field-value highlight-large-value">${currentQty}</span>
+                            <svg class="barcode-svg" id="bc_qty_${i}"></svg>
+                        </div>
+                    </div>
+
+                    <div class="label-field">
+                        <span class="label-field-title">L/N:</span> <span class="label-field-value">${ln}</span>
+                        <svg class="barcode-svg" id="bc_ln_${i}"></svg>
+                    </div>
+
+                    <div class="label-field">
+                        <span class="label-field-title">LN/VD:</span> <span class="label-field-value">${lnvd}</span>
+                        <svg class="barcode-svg" id="bc_lnvd_${i}"></svg>
+                    </div>
+
+                    <div class="label-field">
+                        <span class="label-field-title">SPN:</span> <span class="label-field-value">${currentSpn}</span>
+                        <svg class="svg barcode-svg" id="bc_spn_${i}"></svg>
+                    </div>
+
+                    <div class="label-field">
+                        <span class="label-field-title">WLN:</span> <span class="label-field-value">${wln}</span>
+                        <svg class="barcode-svg" id="bc_wln_${i}"></svg>
+                    </div>
+
+                    ${labelType === 'outer' ? `
+                    <div class="label-field">
+                        <span class="label-field-title">TQTY:</span> <span class="label-field-value">${tqty}</span>
+                        <svg class="barcode-svg" id="bc_tqty_${i}"></svg>
+                    </div>
+                    ` : ''}
+
+                    <div class="remark-row">
+                        <span>备注 (Remark): <span>${remark}</span></span>
+                        <span class="hf-mark">HF</span>
+                    </div>
+                </div>
+            </div>
+            `;
+            
+            wrapper.insertAdjacentHTML('beforeend', labelHtml);
+
+            drawBarcode(`bc_vd_pn_${i}`, vdpn);
+            drawBarcode(`bc_gt_pn_${i}`, gtpn);
+            drawBarcode(`bc_vd_code_${i}`, vdcode);
+            drawBarcode(`bc_dc_${i}`, dc);
+            drawBarcode(`bc_qty_${i}`, currentQty.toString());
+            drawBarcode(`bc_ln_${i}`, ln);
+            drawBarcode(`bc_lnvd_${i}`, lnvd);
+            drawBarcode(`bc_spn_${i}`, currentSpn);
+            drawBarcode(`bc_wln_${i}`, wln);
+            
+            if (labelType === 'outer') {
+                drawBarcode(`bc_tqty_${i}`, tqty.toString());
+            }
+
+            let qrDataObj = {
+                "VDPN": vdpn,
+                "GTPN": gtpn,
+                "VDCODE": vdcode,
+                "DC": dc,
+                "LN": ln,
+                "LNVD": lnvd,
+                "SPN": currentSpn,
+                "WLN": wln,
+                "QTY": currentQty.toString()
+            };
+            if (labelType === "outer") {
+                qrDataObj["TQTY"] = tqty.toString();
+            }
+
+            new QRCode(document.getElementById(`qrcode_${i}`), {
+                text: JSON.stringify(qrDataObj),
+                width: 138, 
+                height: 138,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.L
+            });
+        }
+    }
+
+    // --- PRINT TRACKER LOGIC ---
+    function updateAfterPrint() {
+        let qtyPerBox = parseInt(document.getElementById("qty").value, 10) || 6000;
+        let tqty = parseInt(document.getElementById("tqty").value, 10) || qtyPerBox;
+        let totalLabels = 1;
+        if (tqty > 0) totalLabels = Math.ceil(tqty / qtyPerBox);
+        
+        // 1. Tăng biến đếm tổng
+        totalPrinted += totalLabels;
+        localStorage.setItem('goertekTotalPrinted', totalPrinted);
+        document.getElementById('printCount').innerText = totalPrinted;
+
+        // 2. Tự động nhảy mã SPN lên số tiếp theo để chuẩn bị cho mẻ in sau
+        let baseSpn = document.getElementById("spn").value;
+        if (baseSpn.includes('-')) {
+            let parts = baseSpn.split('-');
+            let serialStr = parts.pop();
+            let spnPrefix = parts.join('-');
+            
+            // Tính số thứ tự mới: (Số cũ + số lượng tem vừa in)
+            let nextSerialDec = base34ToDec(serialStr.toUpperCase()) + totalLabels;
+            let nextSpn = spnPrefix + '-' + toBase34(nextSerialDec);
+            
+            document.getElementById("spn").value = nextSpn;
+            localStorage.setItem('goertekLastSpn', nextSpn);
+        }
+        
+        generateLabels();
+    }
+
+    function resetPrintCount(e) {
+        if(e) e.preventDefault();
+        if(confirm("Bạn có chắc chắn muốn đặt lại bộ đếm số tem đã in về 0? (Hành động này không thể hoàn tác)")) {
+            totalPrinted = 0;
+            localStorage.setItem('goertekTotalPrinted', 0);
+            document.getElementById('printCount').innerText = 0;
+            
+            // Xoá SPN nhớ cũ để nút Auto Gen lấy lại từ -001
+            localStorage.removeItem('goertekLastSpn'); 
+            autoGenerateCodes();
+        }
+    }
+
+    // Lắng nghe sự kiện sau khi hộp thoại In đóng lại
+    window.addEventListener('afterprint', updateAfterPrint);
+
+    window.onload = () => {
+        // Phục hồi bộ đếm từ bộ nhớ trình duyệt
+        let savedPrinted = localStorage.getItem('goertekTotalPrinted');
+        if(savedPrinted) totalPrinted = parseInt(savedPrinted);
+        document.getElementById('printCount').innerText = totalPrinted;
+
+        autoGenerateCodes();
+    };
+</script>
+
+</body>
+</html>
