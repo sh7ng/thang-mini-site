@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lịch Nhắc Gia Đình - Firebase & Push Notification</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Google Fonts (Inter) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs (v10.8.0 - Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col justify-between">
+
+  <!-- TOP HEADER -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
+          <i class="fa-solid me-0 fa-calendar-check text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-slate-900 leading-tight">Lịch Nhắc Gia Đình</h1>
+          <div class="flex items-center space-x-2 text-xs text-slate-500">
+            <span id="sync-badge" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+              <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              Đang kết nối Firebase...
+            </span>
+            <span id="family-id-display" class="font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">Mã: HOME_8899</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2">
+        <button id="btn-enable-push" onclick="requestNotificationPermission()" class="hidden md:inline-flex items-center px-3 py-1.5 border border-indigo-200 text-xs font-semibold rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition">
+          <i class="fa-bell fa-regular mr-1.5"></i> Bật Nhắc Điện Thoại
+        </button>
+        <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-lg text-sm font-medium shadow-sm transition flex items-center">
+          <i class="fa-solid fa-plus mr-1.5"></i> <span class="hidden sm:inline">Thêm Nhắc Nhở</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-4xl mx-auto w-full px-4 py-6 flex-1">
+    
+    <!-- BANNER PUSH PERMISSION (MOBILE) -->
+    <div id="push-banner" class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-sm text-amber-900">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-bell text-amber-600 text-base"></i>
+        <span>Bật thông báo để nhận nhắc nhở đúng giờ trên điện thoại.</span>
+      </div>
+      <button onclick="requestNotificationPermission()" class="bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium hover:bg-amber-700 shrink-0 ml-2">
+        Cho phép
+      </button>
+    </div>
+
+    <!-- STATS / QUICK FILTERS -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <button onclick="setFilter('today')" id="filter-today" class="filter-card bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-left hover:border-indigo-300 transition active border-indigo-500 ring-1 ring-indigo-500">
+        <div class="text-xs font-medium text-slate-500">Hôm nay</div>
+        <div id="count-today" class="text-xl font-bold text-indigo-600 mt-1">0</div>
+      </button>
+      <button onclick="setFilter('upcoming')" id="filter-upcoming" class="filter-card bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-left hover:border-indigo-300 transition">
+        <div class="text-xs font-medium text-slate-500">Sắp tới</div>
+        <div id="count-upcoming" class="text-xl font-bold text-slate-800 mt-1">0</div>
+      </button>
+      <button onclick="setFilter('completed')" id="filter-completed" class="filter-card bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-left hover:border-indigo-300 transition">
+        <div class="text-xs font-medium text-slate-500">Đã xong</div>
+        <div id="count-completed" class="text-xl font-bold text-emerald-600 mt-1">0</div>
+      </button>
+      <button onclick="setFilter('all')" id="filter-all" class="filter-card bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-left hover:border-indigo-300 transition">
+        <div class="text-xs font-medium text-slate-500">Tất cả</div>
+        <div id="count-all" class="text-xl font-bold text-slate-800 mt-1">0</div>
+      </button>
+    </div>
+
+    <!-- MEMBER FILTER BAR -->
+    <div class="flex items-center justify-between mb-4 pb-2 overflow-x-auto custom-scrollbar">
+      <div class="flex items-center space-x-2 text-xs font-medium shrink-0">
+        <span class="text-slate-400">Thành viên:</span>
+        <button onclick="setMemberFilter('ALL')" class="member-btn bg-slate-800 text-white px-2.5 py-1 rounded-full">Tất cả</button>
+        <button onclick="setMemberFilter('Bố')" class="member-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 rounded-full">Bố</button>
+        <button onclick="setMemberFilter('Mẹ')" class="member-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 rounded-full">Mẹ</button>
+        <button onclick="setMemberFilter('Cả nhà')" class="member-btn bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 rounded-full">Cả nhà</button>
+      </div>
+
+      <!-- Quick Test Push -->
+      <button onclick="sendTestNotification()" class="text-xs text-indigo-600 hover:underline shrink-0 ml-4">
+        <i class="fa-solid fa-paper-plane mr-1"></i> Thử thông báo
+      </button>
+    </div>
+
+    <!-- REMINDER LIST -->
+    <div id="reminder-list" class="space-y-3">
+      <!-- Loading State -->
+      <div class="text-center py-12 text-slate-400">
+        <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+        <p class="text-sm">Đang tải lịch nhắc từ Cloud...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: ADD / EDIT REMINDER -->
+  <div id="reminder-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-100">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modal-title" class="font-bold text-slate-900 text-lg">Thêm Lịch Nhắc Mới</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="reminder-form" onsubmit="saveReminder(event)" class="space-y-4">
+        <input type="hidden" id="reminder-id">
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tên công việc / Lịch nhắc *</label>
+          <input type="text" id="input-title" required placeholder="Ví dụ: Đóng tiền điện, Mua sữa cho con..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Giao cho thành viên</label>
+            <select id="input-assignee" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+              <option value="Cả nhà">Cả nhà</option>
+              <option value="Bố">Bố</option>
+              <option value="Mẹ">Mẹ</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Mức độ ưu tiên</label>
+            <select id="input-priority" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+              <option value="Bình thường">Bình thường</option>
+              <option value="Quan trọng">Quan trọng ⚡</option>
+              <option value="Khẩn cấp">Khẩn cấp 🚨</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Ngày nhắc</label>
+            <input type="date" id="input-date" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Giờ nhắc</label>
+            <input type="time" id="input-time" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Ghi chú thêm</label>
+          <textarea id="input-desc" rows="2" placeholder="Ghi chú vị trí, địa điểm hoặc chi tiết..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 border border-slate-200 text-slate-600 text-sm rounded-lg hover:bg-slate-50 font-medium">Hủy</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded-lg font-medium shadow-sm">Lưu lịch nhắc</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // ==========================================
+    // 1. CẤU HÌNH FIREBASE (Dán config của bạn vào đây)
+    // ==========================================
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Khởi tạo Firebase
+    let db, messaging;
+    let isFirebaseReady = false;
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      
+      // Bật tính năng lưu offline trên Firestore
+      db.enablePersistence().catch(err => console.log("Persistence error:", err.code));
+      
+      if (firebase.messaging.isSupported()) {
+        messaging = firebase.messaging();
+      }
+      isFirebaseReady = true;
+      document.getElementById('sync-badge').className = "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800";
+      document.getElementById('sync-badge').innerHTML = `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-500"></span>Đồng bộ Firebase`;
+    } catch (e) {
+      console.warn("Chưa cấu hình API Key Firebase chính xác, ứng dụng chạy chế độ Demo LocalStorage.", e);
+      document.getElementById('sync-badge').className = "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600";
+      document.getElementById('sync-badge').innerHTML = `<span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-slate-400"></span>Chế độ Offline Local`;
+    }
+
+    // STATE QUẢN LÝ
+    const FAMILY_ID = "HOME_8899";
+    let reminders = [];
+    let currentFilter = 'today';
+    let currentMember = 'ALL';
+
+    // ==========================================
+    // 2. KHỞI TẠO VÀ LẮNG NGHE DỮ LIỆU THỜI GIAN THỰC
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Đặt ngày mặc định trong form là hôm nay
+      document.getElementById('input-date').valueAsDate = new Date();
+      document.getElementById('input-time').value = "08:00";
+
+      // Kiểm tra trạng thái cấp quyền Push Notification
+      checkNotificationStatus();
+
+      // Nếu có Firebase, kết nối Realtime Listener
+      if (isFirebaseReady) {
+        db.collection("families").doc(FAMILY_ID).collection("reminders")
+          .onSnapshot((snapshot) => {
+            reminders = [];
+            snapshot.forEach((doc) => {
+              reminders.push({ id: doc.id, ...doc.data() });
+            });
+            render();
+          }, (error) => {
+            console.error("Lỗi lắng nghe dữ liệu:", error);
+            loadLocalFallback();
+          });
+      } else {
+        loadLocalFallback();
+      }
+    });
+
+    function loadLocalFallback() {
+      const localData = localStorage.getItem('family_reminders');
+      reminders = localData ? JSON.parse(localData) : getMockData();
+      render();
+    }
+
+    function saveToLocal() {
+      localStorage.setItem('family_reminders', JSON.stringify(reminders));
+    }
+
+    // ==========================================
+    // 3. ĐĂNG KÝ VÀ XỬ LÝ WEB PUSH NOTIFICATION
+    // ==========================================
+    function checkNotificationStatus() {
+      if (!("Notification" in window)) {
+        document.getElementById('push-banner').style.display = 'none';
+        return;
+      }
+
+      if (Notification.permission === "granted") {
+        document.getElementById('push-banner').style.display = 'none';
+        document.getElementById('btn-enable-push').innerHTML = `<i class="fa-solid fa-bell text-emerald-600 mr-1.5"></i> Đã bật thông báo`;
+      }
+    }
+
+    async function requestNotificationPermission() {
+      if (!("Notification" in window)) {
+        alert("Trình duyệt này không hỗ trợ Push Notification.");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      if (permission === "granted") {
+        document.getElementById('push-banner').style.display = 'none';
+        
+        // Đăng ký Service Worker và lấy Token nếu có Firebase
+        if (messaging) {
+          try {
+            const token = await messaging.getToken({
+              vapidKey: 'YOUR_VAPID_KEY_HERE' // Thay bằng VAPID Key từ Firebase Cloud Messaging tab
+            });
+            console.log("Firebase Messaging Token của máy này:", token);
+            // Bạn có thể lưu Token này lên Firestore doc của gia đình
+          } catch (err) {
+            console.error("Lỗi lấy FCM Token:", err);
+          }
+        }
+
+        new Notification("Lịch Nhắc Gia Đình", {
+          body: "Đã bật thông báo nhắc nhở thành công!",
+          icon: "https://cdn-icons-png.flaticon.com/512/2693/2693507.png"
+        });
+      }
+    }
+
+    function sendTestNotification() {
+      if (Notification.permission === "granted") {
+        new Notification("Lịch Nhắc Gia Đình (Test)", {
+          body: "Bố vừa thêm lịch: Mua quà sinh nhật cho con gái!",
+          icon: "https://cdn-icons-png.flaticon.com/512/2693/2693507.png"
+        });
+      } else {
+        alert("Bạn chưa cấp quyền thông báo. Bấm nút 'Cho phép' trên banner màu vàng.");
+      }
+    }
+
+    // ==========================================
+    // 4. HIỂN THỊ DỮ LIỆU & BỘ LỌC (RENDER)
+    // ==========================================
+    function render() {
+      const listEl = document.getElementById('reminder-list');
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Đếm số lượng cho stats
+      const countToday = reminders.filter(r => !r.completed && r.date === todayStr).length;
+      const countUpcoming = reminders.filter(r => !r.completed && r.date > todayStr).length;
+      const countCompleted = reminders.filter(r => r.completed).length;
+
+      document.getElementById('count-today').innerText = countToday;
+      document.getElementById('count-upcoming').innerText = countUpcoming;
+      document.getElementById('count-completed').innerText = countCompleted;
+      document.getElementById('count-all').innerText = reminders.length;
+
+      // Lọc danh sách
+      let filtered = reminders.filter(r => {
+        // Lọc theo member
+        if (currentMember !== 'ALL' && r.assignee !== currentMember && r.assignee !== 'Cả nhà') {
+          return false;
+        }
+        // Lọc theo tab status
+        if (currentFilter === 'today') return !r.completed && r.date === todayStr;
+        if (currentFilter === 'upcoming') return !r.completed && r.date > todayStr;
+        if (currentFilter === 'completed') return r.completed;
+        return true;
+      });
+
+      // Sắp xếp theo ngày/giờ
+      filtered.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white rounded-2xl p-8 text-center border border-slate-200">
+            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-3">
+              <i class="fa-regular fa-calendar-xmark text-xl"></i>
+            </div>
+            <p class="text-slate-600 font-medium text-sm">Không có lịch nhắc nào</p>
+            <p class="text-xs text-slate-400 mt-1">Thảnh thơi quá! Hãy bấm "Thêm Nhắc Nhở" nếu có việc mới.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(item => `
+        <div class="bg-white rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow transition flex items-start justify-between ${item.completed ? 'opacity-60 bg-slate-50' : ''}">
+          <div class="flex items-start space-x-3">
+            <button onclick="toggleComplete('${item.id}', ${item.completed})" class="mt-0.5 text-lg text-slate-300 hover:text-indigo-600 transition">
+              <i class="${item.completed ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-regular fa-circle'}"></i>
+            </button>
+            <div>
+              <h4 class="font-semibold text-sm text-slate-800 ${item.completed ? 'line-through text-slate-500' : ''}">${escapeHtml(item.title)}</h4>
+              ${item.desc ? `<p class="text-xs text-slate-500 mt-0.5">${escapeHtml(item.desc)}</p>` : ''}
+              
+              <div class="flex flex-wrap items-center gap-2 mt-2 text-xs">
+                <span class="inline-flex items-center px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-medium">
+                  <i class="fa-regular fa-clock mr-1 text-slate-400"></i> ${item.time} - ${formatDate(item.date)}
+                </span>
+                <span class="px-2 py-0.5 rounded font-medium ${getAssigneeBadge(item.assignee)}">
+                  👤 ${item.assignee}
+                </span>
+                ${item.priority !== 'Bình thường' ? `
+                  <span class="px-2 py-0.5 rounded font-medium ${item.priority === 'Khẩn cấp' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}">
+                    ${item.priority}
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+
+          <button onclick="deleteReminder('${item.id}')" class="text-slate-300 hover:text-red-500 p-1 text-xs">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    // ==========================================
+    // 5. THÊM, SỬA, XÓA LỊCH NHẮC (CRUD)
+    // ==========================================
+    async function saveReminder(e) {
+      e.preventDefault();
+      const id = document.getElementById('reminder-id').value;
+      const data = {
+        title: document.getElementById('input-title').value,
+        assignee: document.getElementById('input-assignee').value,
+        priority: document.getElementById('input-priority').value,
+        date: document.getElementById('input-date').value,
+        time: document.getElementById('input-time').value,
+        desc: document.getElementById('input-desc').value,
+        completed: false,
+        createdAt: new Date().toISOString()
+      };
+
+      if (isFirebaseReady) {
+        if (id) {
+          await db.collection("families").doc(FAMILY_ID).collection("reminders").doc(id).update(data);
+        } else {
+          await db.collection("families").doc(FAMILY_ID).collection("reminders").add(data);
+        }
+      } else {
+        if (id) {
+          const idx = reminders.findIndex(r => r.id === id);
+          if (idx !== -1) reminders[idx] = { ...reminders[idx], ...data };
+        } else {
+          reminders.push({ id: 'loc_' + Date.now(), ...data });
+        }
+        saveToLocal();
+        render();
+      }
+
+      closeModal();
+    }
+
+    async function toggleComplete(id, currentStatus) {
+      if (isFirebaseReady) {
+        await db.collection("families").doc(FAMILY_ID).collection("reminders").doc(id).update({
+          completed: !currentStatus
+        });
+      } else {
+        const item = reminders.find(r => r.id === id);
+        if (item) item.completed = !currentStatus;
+        saveToLocal();
+        render();
+      }
+    }
+
+    async function deleteReminder(id) {
+      if (!confirm("Bạn có chắc muốn xóa lịch nhắc này?")) return;
+
+      if (isFirebaseReady) {
+        await db.collection("families").doc(FAMILY_ID).collection("reminders").doc(id).delete();
+      } else {
+        reminders = reminders.filter(r => r.id !== id);
+        saveToLocal();
+        render();
+      }
+    }
+
+    // UTILS
+    function setFilter(type) {
+      currentFilter = type;
+      document.querySelectorAll('.filter-card').forEach(el => {
+        el.classList.remove('border-indigo-500', 'ring-1', 'ring-indigo-500');
+      });
+      document.getElementById(`filter-${type}`).classList.add('border-indigo-500', 'ring-1', 'ring-indigo-500');
+      render();
+    }
+
+    function setMemberFilter(member) {
+      currentMember = member;
+      render();
+    }
+
+    function openModal() {
+      document.getElementById('reminder-form').reset();
+      document.getElementById('reminder-id').value = '';
+      document.getElementById('input-date').valueAsDate = new Date();
+      document.getElementById('input-time').value = "08:00";
+      document.getElementById('reminder-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('reminder-modal').classList.add('hidden');
+    }
+
+    function getAssigneeBadge(name) {
+      if (name === 'Bố') return 'bg-blue-50 text-blue-700';
+      if (name === 'Mẹ') return 'bg-pink-50 text-pink-700';
+      return 'bg-purple-50 text-purple-700';
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const [y, m, d] = dateStr.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function getMockData() {
+      const today = new Date().toISOString().split('T')[0];
+      return [
+        { id: '1', title: 'Đóng tiền điện tháng này', assignee: 'Bố', priority: 'Quan trọng', date: today, time: '09:00', desc: 'Kiểm tra hóa đơn trên ZaloPay', completed: false },
+        { id: '2', title: 'Mua sữa chua và trái cây', assignee: 'Mẹ', priority: 'Bình thường', date: today, time: '17:30', desc: 'Ghé siêu thị VinMart gần nhà', completed: false },
+        { id: '3', title: 'Đưa xe máy đi thay nhớt', assignee: 'Bố', priority: 'Bình thường', date: today, time: '10:00', desc: '', completed: true }
+      ];
+    }
+  </script>
+</body>
+</html>
