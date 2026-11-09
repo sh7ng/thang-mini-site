@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function familyMember(familyId) {
+      return signedIn() && firestore.exists(/databases/(default)/documents/families/$(familyId)/members/$(request.auth.uid));
+    }
+    match /family-messages/{familyId}/{uid}/{fileName} {
+      allow read: if familyMember(familyId);
+      allow create: if familyMember(familyId) && request.auth.uid == uid
+        && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow update, delete: if familyMember(familyId) && request.auth.uid == uid;
+    }
+  }
+}
