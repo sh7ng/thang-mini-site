@@ -1,14 +1,24 @@
-# Jacob Mini Site
+# JACOB OS 2.0 — Future OS
 
-Website tĩnh tối giản cho `bosua.site`, deploy bằng Cloudflare Workers Static Assets.
+Bản nâng cấp giao diện từ `jacob-mini-site-weather-elevation.zip` gốc. Website tĩnh, tương thích triển khai Cloudflare Workers Static Assets.
 
-## File
-- `index.html`: trang chủ, thời tiết hiện tại, dự báo 3 ngày, biểu đồ nhiệt độ theo giờ và độ cao vị trí.
-- `about.html`, `random.html`, `game.html`, `holidays.html`, `404.html`: các trang phụ.
-- `style.css`, `script.js`: giao diện và chức năng.
-- `wrangler.jsonc`: giữ nguyên tên Worker `thang-mini-site` để không làm thay đổi cấu hình domain hiện tại.
+## Các tệp
+- `index.html`: dashboard Future OS, đồng hồ, lời chào, workspace, thời tiết, dự báo 3 ngày, biểu đồ nhiệt độ theo giờ và độ cao.
+- `about.html`, `random.html`, `game.html`, `holidays.html`, `404.html`: các trang phụ hiện có, dùng chung giao diện mới.
+- `style.css`: giao diện Future OS, responsive, dark/light mode.
+- `script.js`: logic hiện có cho đồng hồ, lời chào, thời tiết, biểu đồ, độ cao, ngày lễ, random và game.
+- `wrangler.jsonc`: giữ nguyên Worker `thang-mini-site` và cấu hình assets gốc.
 
-## Cập nhật
-Giải nén ZIP và tải các file bên trong thư mục này lên repository GitHub `sh7ng/thang-mini-site`, giữ nguyên cấu trúc file ở thư mục gốc repository rồi commit lên `main`. Cloudflare sẽ tự deploy nếu đã bật tích hợp GitHub.
+## Triển khai
+1. Sao lưu repository GitHub hiện tại.
+2. Giải nén ZIP này.
+3. Upload các tệp bên trong thư mục ZIP vào thư mục gốc repository `sh7ng/thang-mini-site`, cho phép ghi đè các tệp trùng tên.
+4. Giữ nguyên Worker `thang-mini-site`, domain `bosua.site` và thiết lập Cloudflare hiện có.
+5. Commit lên nhánh `main`, chờ Cloudflare Pages/Workers build hoàn tất rồi kiểm tra website.
 
-Thời tiết lấy từ Open-Meteo, không cần API key. Trình duyệt sẽ hỏi quyền vị trí; nếu không được cấp quyền, trang dùng Hà Nội làm vị trí mặc định và ghi chú rõ điều đó. Độ cao là giá trị ước tính theo dữ liệu địa hình của Open-Meteo. Không có analytics hoặc tracking được thêm vào.
+## Ghi chú
+- Không thêm analytics, quảng cáo hoặc tracking.
+- Thời tiết lấy từ Open-Meteo, không cần API key. Trình duyệt cần được cấp quyền vị trí; nếu từ chối, website dùng tọa độ Hà Nội làm mặc định.
+- Độ cao được hiển thị từ trường elevation nếu API trả về.
+- Giao diện ưu tiên dark mode lần đầu; lựa chọn dark/light được lưu trong localStorage.
+- ZIP nền gốc không chứa `tem.html` hoặc trang iframe in tem. Nếu muốn giữ công cụ in tem, cần chép thêm `tem.html` (và trang iframe nếu đã tạo) vào thư mục gốc repo sau khi triển khai bản này.

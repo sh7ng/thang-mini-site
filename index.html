@@ -1,111 +1,46 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f7f7f4">
-  <meta name="description" content="Jacob — một góc nhỏ trên Internet.">
-  <meta property="og:title" content="Jacob.">
-  <meta property="og:description" content="Một góc nhỏ trên Internet.">
-  <title>Jacob.</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080d18"><meta name="description" content="Jacob OS — personal digital space.">
+  <meta property="og:title" content="Jacob OS"><meta property="og:description" content="A personal digital space by Jacob.">
+  <title>Jacob OS — Personal Digital Space</title><link rel="stylesheet" href="style.css">
 </head>
-<body data-page="home">
-  <header class="site-header">
-    <a class="brand" href="index.html" aria-label="Trang chủ">JACOB.</a>
-    <nav class="nav" aria-label="Điều hướng">
-      <a href="about.html">About</a>
-      <a href="random.html">Random</a>
-      <a href="holidays.html">Ngày lễ</a>
-      <a href="game.html">Game</a>
-      <button id="themeToggle" class="icon-btn" type="button" aria-label="Đổi giao diện">◐</button>
-    </nav>
+<body data-page="home" class="os-home">
+  <header class="site-header os-header">
+    <a class="brand os-brand" href="index.html"><span class="brand-orbit">◉</span><span>JACOB<span class="brand-muted">.OS</span><small>PERSONAL DIGITAL SPACE</small></span></a>
+    <nav class="nav os-nav" aria-label="Điều hướng"><a href="#workspace">Workspace</a><a href="#weather">Environment</a><a href="about.html">About</a><button id="themeToggle" class="icon-btn" type="button" aria-label="Đổi giao diện">◐</button></nav>
   </header>
+  <main class="home os-shell">
+    <section class="os-hero reveal">
+      <div class="hero-copy"><div class="system-status"><i></i> PERSONAL SYSTEM <span>·</span> ONLINE</div>
+        <p class="eyebrow" id="greeting">Xin chào.</p><h1>Welcome<span class="accent-dot">.</span><br><span class="hero-name">I'm Jacob.</span></h1>
+        <p class="lead" id="dailyLine">Một góc nhỏ trên Internet.</p>
+        <div class="hero-meta"><div class="clock" id="clock">00:00:00</div><div class="meta-row"><span id="dateText">—</span><span class="dot">/</span><span id="locationText">Đang tìm vị trí…</span></div></div>
+      </div>
+      <div class="orbital-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><div class="core-glow"><span>J</span></div><div class="orbit-tag tag-top">JACOB / 01</div><div class="orbit-tag tag-bottom">DIGITAL SPACE</div></div>
+    </section>
 
-  <main class="home">
-    <section class="hero reveal">
-      <p class="eyebrow" id="greeting">Xin chào.</p>
-      <h1>Jacob.</h1>
-      <p class="lead" id="dailyLine">Một góc nhỏ trên Internet.</p>
-      <div class="clock" id="clock">00:00:00</div>
-      <div class="meta-row">
-        <span id="dateText">—</span>
-        <span class="dot">•</span>
-        <span id="locationText">Đang tìm vị trí…</span>
+    <section id="workspace" class="workspace-section reveal delay-1">
+      <div class="section-heading os-section-heading"><div><p class="eyebrow">01 / Workspace</p><h2>Your space<span class="accent-dot">.</span></h2><p class="section-subtitle">Một nơi cho những công cụ và ý tưởng của bạn.</p></div><span class="section-index">SELECT MODULE ↘</span></div>
+      <div class="module-grid">
+        <a class="module-card module-feature" href="holidays.html"><span class="module-top"><span class="module-icon">◷</span><span class="module-code">SYS.01</span></span><span class="module-title">Vietnam Holidays</span><span class="module-desc">Theo dõi ngày lễ và đếm ngược kỳ nghỉ tiếp theo.</span><span class="module-arrow">↗</span></a>
+        <a class="module-card" href="random.html"><span class="module-top"><span class="module-icon violet">✳</span><span class="module-code">LAB.02</span></span><span class="module-title">Random Lab</span><span class="module-desc">Một ý tưởng, câu nói hoặc điều bất ngờ.</span><span class="module-arrow">↗</span></a>
+        <a class="module-card" href="game.html"><span class="module-top"><span class="module-icon green">⌘</span><span class="module-code">PLAY.03</span></span><span class="module-title">Playground</span><span class="module-desc">Tạm nghỉ một chút với mini game.</span><span class="module-arrow">↗</span></a>
+        <a class="module-card" href="about.html"><span class="module-top"><span class="module-icon amber">◈</span><span class="module-code">INFO.04</span></span><span class="module-title">About Jacob</span><span class="module-desc">Giới thiệu về không gian số này.</span><span class="module-arrow">↗</span></a>
       </div>
     </section>
 
-    <section class="weather-section reveal delay-1">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Thời tiết</p>
-          <h2 id="weatherTitle">Hôm nay</h2>
-        </div>
-        <button id="refreshWeather" class="text-btn" type="button">Làm mới ↻</button>
-      </div>
-
-      <div class="weather-current card">
-        <div>
-          <div class="weather-icon" id="weatherIcon">☼</div>
-          <div class="current-temp" id="currentTemp">—°</div>
-          <div class="muted" id="currentSummary">Đang tải thời tiết…</div>
-        </div>
-        <div class="current-details">
-          <span><b id="currentHigh">—°</b> cao</span>
-          <span><b id="currentLow">—°</b> thấp</span>
-          <span><b id="rainChance">—%</b> mưa</span>
-        </div>
-      </div>
-
-      <div class="forecast-grid" id="forecastGrid" aria-live="polite">
-        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
-      </div>
-
-      <section class="hourly-card card" aria-labelledby="hourlyTitle">
-        <div class="section-heading chart-heading">
-          <div>
-            <p class="eyebrow">Diễn biến trong ngày</p>
-            <h3 id="hourlyTitle">Nhiệt độ theo giờ</h3>
-          </div>
-          <span class="chart-unit">°C</span>
-        </div>
-        <div id="hourlyChart" class="hourly-chart" role="img" aria-label="Biểu đồ nhiệt độ theo giờ hôm nay">
-          <p class="muted">Đang tải biểu đồ…</p>
-        </div>
-        <div class="chart-legend"><span><i></i> Nhiệt độ dự báo</span><span id="chartRange">—</span></div>
-      </section>
-
-      <div class="elevation-card card">
-        <div class="elevation-symbol" aria-hidden="true">⌁</div>
-        <div><p class="eyebrow">Địa hình</p><h3>Độ cao tại vị trí của bạn</h3><p id="elevationValue" class="elevation-value">Đang xác định…</p><p id="elevationNote" class="tiny-note">Cần cho phép truy cập vị trí để ước tính độ cao.</p></div>
-      </div>
-      <p class="tiny-note">Thời tiết và độ cao được lấy từ Open-Meteo. Tọa độ chỉ dùng để truy vấn dữ liệu, không được lưu hay tracking.</p>
+    <section id="weather" class="weather-section os-weather reveal delay-2">
+      <div class="section-heading os-section-heading"><div><p class="eyebrow">02 / Environment</p><h2>Outside world<span class="accent-dot">.</span></h2><p class="section-subtitle">Điều kiện thời tiết tại vị trí của bạn.</p></div><button id="refreshWeather" class="text-btn os-refresh" type="button">REFRESH ↻</button></div>
+      <div class="weather-current card os-weather-current"><div class="weather-main"><div class="weather-icon" id="weatherIcon">☼</div><div><div class="current-temp" id="currentTemp">—°</div><div class="muted" id="currentSummary">Đang tải thời tiết…</div></div></div><div class="current-details"><span><b id="currentHigh">—°</b><small>CAO NHẤT</small></span><span><b id="currentLow">—°</b><small>THẤP NHẤT</small></span><span><b id="rainChance">—%</b><small>KHẢ NĂNG MƯA</small></span></div></div>
+      <div class="forecast-grid" id="forecastGrid" aria-live="polite"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+      <div class="weather-lower"><section class="hourly-card card"><div class="section-heading chart-heading"><div><p class="eyebrow">TEMPERATURE</p><h3>Nhiệt độ theo giờ</h3></div><span class="chart-unit">°C</span></div><div id="hourlyChart" class="hourly-chart" role="img" aria-label="Biểu đồ nhiệt độ theo giờ hôm nay"><p class="muted">Đang tải biểu đồ…</p></div><div class="chart-legend"><span><i></i> Dự báo nhiệt độ</span><span id="chartRange">—</span></div></section>
+      <div class="elevation-card card"><div class="elevation-symbol">⌁</div><div><p class="eyebrow">ALTITUDE / ELEVATION</p><h3>Độ cao vị trí</h3><p id="elevationValue" class="elevation-value">Đang xác định…</p><p id="elevationNote" class="tiny-note">Cần cho phép truy cập vị trí để ước tính độ cao.</p></div></div></div>
+      <p class="tiny-note privacy-note">Powered by Open-Meteo · Tọa độ chỉ dùng để truy vấn dữ liệu, không lưu trữ hay tracking.</p>
     </section>
-
-    <section class="quick-links reveal delay-2">
-      <a class="link-card" href="holidays.html">
-        <span class="link-mark">↓</span>
-        <span><strong>Ngày lễ Việt Nam</strong><small>Đếm ngược đến kỳ nghỉ tiếp theo</small></span>
-        <span>→</span>
-      </a>
-      <a class="link-card" href="random.html">
-        <span class="link-mark">✦</span>
-        <span><strong>Random</strong><small>Một thứ bất ngờ nho nhỏ</small></span>
-        <span>→</span>
-      </a>
-      <a class="link-card" href="game.html">
-        <span class="link-mark">○</span>
-        <span><strong>Mini game</strong><small>Đoán một con số</small></span>
-        <span>→</span>
-      </a>
-    </section>
+    <section class="daily-note reveal"><span class="daily-note-icon">✦</span><div><p class="eyebrow">A LITTLE REMINDER</p><p>Không cần phải vội. Một ý tưởng nhỏ cũng đáng để bắt đầu.</p></div><span class="daily-note-mark">J.</span></section>
   </main>
-
-  <footer class="site-footer">
-    <span>© <span id="year"></span> Jacob.</span>
-    <span>No ads · No tracking</span>
-  </footer>
-
+  <footer class="site-footer os-footer"><span>© <span id="year"></span> JACOB.OS</span><span>BUILT WITH CURIOSITY · NO ADS · NO TRACKING</span><a href="about.html">ABOUT ↗</a></footer>
   <script src="script.js"></script>
-</body>
-</html>
+</body></html>

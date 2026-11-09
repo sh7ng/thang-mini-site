@@ -43,11 +43,12 @@ function setupGreeting(){
 function setupTheme(){
   const btn = $("#themeToggle");
   const saved = localStorage.getItem("jacob-theme");
-  if(saved === "dark") document.body.classList.add("dark");
+  if(saved !== "light") document.body.classList.add("dark");
   if(!btn) return;
   btn.addEventListener("click",()=>{
     document.body.classList.toggle("dark");
     localStorage.setItem("jacob-theme", document.body.classList.contains("dark") ? "dark":"light");
+    btn.setAttribute("aria-label", document.body.classList.contains("dark") ? "Chuyển sang giao diện sáng" : "Chuyển sang giao diện tối");
   });
 }
 
