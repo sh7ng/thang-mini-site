@@ -1,6 +1,6 @@
 // Keep this Web App config identical to firebase-config.js after registering the Web app.
 self.FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyAPmCUY4UfmoHv1xRkV14JHJW9Zkaip1S0',
+  apiKey: 'AIzaSyAqMIzLfM1UyybXVkIqB1DmNs5WovmrGo8',
   authDomain: 'familycalendar-7afb6.firebaseapp.com',
   projectId: 'familycalendar-7afb6',
   storageBucket: 'familycalendar-7afb6.firebasestorage.app',
