@@ -3,7 +3,7 @@
 // Register a Web app in Firebase Console > Project settings > Your apps and replace appId below
 // with the exact Web App ID. Do not replace the projectId.
 export const firebaseConfig = {
-  apiKey: 'AIzaSyAPmCUY4UfmoHv1xRkV14JHJW9Zkaip1S0',
+  apiKey: 'AIzaSyAqMIzLfM1UyybXVkIqB1DmNs5WovmrGo8',
   authDomain: 'familycalendar-7afb6.firebaseapp.com',
   projectId: 'familycalendar-7afb6',
   storageBucket: 'familycalendar-7afb6.firebasestorage.app',
